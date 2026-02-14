@@ -1,0 +1,342 @@
+/* src/app/globals.css */
+
+:root {
+  /* Noren-inspired palette */
+  --bg: #faf6f0;
+  --bg-warm: #f5ede0;
+  --fg: #2c1810;
+  --fg-muted: #6b5c52;
+  --accent: #8b1a1a;
+  --accent-light: #c0392b;
+  --accent-glow: rgba(139, 26, 26, 0.15);
+  --cream: #fff8ef;
+  --border: #d4c5b4;
+  --tag-bg: #ece3d5;
+
+  /* Genre colors */
+  --washoku: #c0392b;
+  --yoshoku: #d4851f;
+  --chuka: #e6a817;
+  --sonota: #5a8a6a;
+  --dessert: #d4729a;
+  --carb-rice: #8b6914;
+  --carb-noodle: #c17817;
+  --random: #3a6b8c;
+
+  --font-display: "Zen Maru Gothic", "Hiragino Maru Gothic Pro", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif;
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --shadow-soft: 0 2px 20px rgba(44, 24, 16, 0.08);
+  --shadow-lift: 0 8px 32px rgba(44, 24, 16, 0.12);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ─── Page shell ─── */
+
+.page {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Header ─── */
+
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.header p {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  color: var(--fg-muted);
+  margin-top: 4px;
+}
+
+/* ─── Decorative line (noren-style) ─── */
+
+.noren-line {
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  border-radius: 2px;
+  margin: 0 auto 24px;
+}
+
+/* ─── Controls ─── */
+
+.controls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.btn-group-label {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--fg-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--cream);
+  color: var(--fg);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 1;
+  min-width: 70px;
+  text-align: center;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Color-coded buttons */
+.btn[data-color="washoku"] {
+  border-color: var(--washoku);
+  color: var(--washoku);
+}
+.btn[data-color="washoku"]:hover,
+.btn[data-color="washoku"].active {
+  background: var(--washoku);
+  color: white;
+}
+
+.btn[data-color="yoshoku"] {
+  border-color: var(--yoshoku);
+  color: var(--yoshoku);
+}
+.btn[data-color="yoshoku"]:hover,
+.btn[data-color="yoshoku"].active {
+  background: var(--yoshoku);
+  color: white;
+}
+
+.btn[data-color="chuka"] {
+  border-color: var(--chuka);
+  color: var(--chuka);
+}
+.btn[data-color="chuka"]:hover,
+.btn[data-color="chuka"].active {
+  background: var(--chuka);
+  color: white;
+}
+
+.btn[data-color="sonota"] {
+  border-color: var(--sonota);
+  color: var(--sonota);
+}
+.btn[data-color="sonota"]:hover,
+.btn[data-color="sonota"].active {
+  background: var(--sonota);
+  color: white;
+}
+
+.btn[data-color="dessert"] {
+  border-color: var(--dessert);
+  color: var(--dessert);
+}
+.btn[data-color="dessert"]:hover,
+.btn[data-color="dessert"].active {
+  background: var(--dessert);
+  color: white;
+}
+
+.btn[data-color="rice"] {
+  border-color: var(--carb-rice);
+  color: var(--carb-rice);
+}
+.btn[data-color="rice"]:hover,
+.btn[data-color="rice"].active {
+  background: var(--carb-rice);
+  color: white;
+}
+
+.btn[data-color="noodle"] {
+  border-color: var(--carb-noodle);
+  color: var(--carb-noodle);
+}
+.btn[data-color="noodle"]:hover,
+.btn[data-color="noodle"].active {
+  background: var(--carb-noodle);
+  color: white;
+}
+
+.btn[data-color="random"] {
+  border-color: var(--random);
+  color: var(--random);
+}
+.btn[data-color="random"]:hover,
+.btn[data-color="random"].active {
+  background: var(--random);
+  color: white;
+}
+
+.btn-reroll {
+  border-style: dashed;
+  border-color: var(--fg-muted);
+  color: var(--fg-muted);
+  background: transparent;
+}
+.btn-reroll:hover {
+  background: var(--bg-warm);
+  border-style: solid;
+}
+
+/* ─── Result card ─── */
+
+.result-area {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-card {
+  width: 100%;
+  background: var(--cream);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-lift);
+  animation: card-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes card-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.result-card .dish-name {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.75rem;
+  color: var(--accent);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+
+.result-card .tags {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.result-card .tag {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: var(--tag-bg);
+  color: var(--fg-muted);
+}
+
+/* ─── Empty / placeholder states ─── */
+
+.placeholder {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--fg-muted);
+  text-align: center;
+  opacity: 0.7;
+}
+
+.error-msg {
+  width: 100%;
+  text-align: center;
+  padding: 20px;
+  border: 2px dashed var(--accent-light);
+  border-radius: var(--radius);
+  background: rgba(192, 57, 43, 0.05);
+  color: var(--accent-light);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  animation: card-in 0.3s ease-out;
+}
+
+/* ─── Subtle BG pattern (dots) ─── */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, var(--border) 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
+  opacity: 0.25;
+  z-index: -1;
+}
