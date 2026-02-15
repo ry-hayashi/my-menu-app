@@ -1,9 +1,7 @@
 // src/lib/menus.ts
-// ─── CSV Loader for Menu data (server-side only) ───
-
-import { readFileSync } from "fs";
-import { join } from "path";
-import { createHash } from "crypto";
+// ─── CSV Loader for Menu data ───
+// Compatible with static export (no Node fs/crypto at top-level).
+// Node APIs are dynamically imported only at build time (SSG).
 
 // ─── Types ───
 
@@ -23,20 +21,27 @@ export interface Menu {
 // ─── Helpers ───
 
 /**
- * Deterministic ID from row content (SHA-256 truncated to 12 hex chars).
+ * Deterministic ID via murmurhash-inspired hash (no Node crypto).
  */
 function stableId(name: string, mainGenre: string, carb: string): string {
-  const hash = createHash("sha256")
-    .update(`${name}\t${mainGenre}\t${carb}`)
-    .digest("hex");
-  return hash.slice(0, 12);
+  const str = `${name}\t${mainGenre}\t${carb}`;
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const combined = 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  return combined.toString(36).padStart(11, "0");
 }
 
 /**
- * Minimal CSV line parser that handles:
- *  - bare values:   a,b,c
- *  - quoted values:  "a,b","c"   (double-quote escaping "")
- *  - mixed:          a,"b""c",d
+ * Minimal CSV line parser (handles quoted values).
  */
 function parseCSVLine(line: string): string[] {
   const fields: string[] = [];
@@ -45,24 +50,19 @@ function parseCSVLine(line: string): string[] {
 
   while (i <= len) {
     if (i === len) {
-      // trailing comma → empty field
       fields.push("");
       break;
     }
-
     if (line[i] === '"') {
-      // Quoted field
-      i++; // skip opening quote
+      i++;
       let value = "";
       while (i < len) {
         if (line[i] === '"') {
           if (i + 1 < len && line[i + 1] === '"') {
-            // escaped quote
             value += '"';
             i += 2;
           } else {
-            // closing quote
-            i++; // skip closing quote
+            i++;
             break;
           }
         } else {
@@ -71,10 +71,8 @@ function parseCSVLine(line: string): string[] {
         }
       }
       fields.push(value);
-      // skip comma (or end)
       if (i < len && line[i] === ",") i++;
     } else {
-      // Unquoted field
       const nextComma = line.indexOf(",", i);
       if (nextComma === -1) {
         fields.push(line.slice(i));
@@ -85,11 +83,8 @@ function parseCSVLine(line: string): string[] {
       }
     }
   }
-
   return fields;
 }
-
-// ─── Guard functions ───
 
 function isMainGenre(v: string): v is MainGenre {
   return (MAIN_GENRES as readonly string[]).includes(v);
@@ -99,21 +94,11 @@ function isCarb(v: string): v is Carb {
   return (CARBS as readonly string[]).includes(v);
 }
 
-// ─── Main loader ───
+// ─── Parse from raw CSV text (pure function, works anywhere) ───
 
-/**
- * Reads `/public/menus.csv` from the project root (server-side only)
- * and returns a validated `Menu[]`.
- *
- * Throws an `Error` listing every validation issue if any row is invalid.
- */
-export async function loadMenusFromPublicCSV(): Promise<Menu[]> {
-  const csvPath = join(process.cwd(), "public", "menus.csv");
-  const raw = readFileSync(csvPath, "utf-8");
-
+export function parseMenusFromCSVText(raw: string): Menu[] {
   const lines = raw.split(/\r?\n/);
 
-  // First non-empty line must be the header
   const headerIdx = lines.findIndex((l) => l.trim() !== "");
   if (headerIdx === -1) {
     throw new Error("menus.csv is empty or contains only blank lines.");
@@ -126,7 +111,7 @@ export async function loadMenusFromPublicCSV(): Promise<Menu[]> {
     !expectedHeader.every((h, i) => header[i] === h)
   ) {
     throw new Error(
-      `menus.csv: unexpected header. Expected [${expectedHeader.join(",")}] but got [${header.join(",")}]`
+      `menus.csv: unexpected header. Expected [${expectedHeader.join(",")}] but got [${header.join(",")}]`,
     );
   }
 
@@ -135,28 +120,19 @@ export async function loadMenusFromPublicCSV(): Promise<Menu[]> {
 
   for (let i = headerIdx + 1; i < lines.length; i++) {
     const line = lines[i];
-    const rowNum = i + 1; // 1-based for human-readable messages
-
-    // Skip completely empty lines
+    const rowNum = i + 1;
     if (line.trim() === "") continue;
 
     const cols = parseCSVLine(line).map((c) => c.trim());
     const [name, mainGenre, carb] = cols;
-
-    // Skip lines with empty name
     if (!name) continue;
 
     const rowErrors: string[] = [];
-
     if (!isMainGenre(mainGenre ?? "")) {
-      rowErrors.push(
-        `mainGenre="${mainGenre}" is not one of [${MAIN_GENRES.join(",")}]`
-      );
+      rowErrors.push(`mainGenre="${mainGenre}" is not one of [${MAIN_GENRES.join(",")}]`);
     }
     if (!isCarb(carb ?? "")) {
-      rowErrors.push(
-        `carb="${carb}" is not one of [${CARBS.join(",")}]`
-      );
+      rowErrors.push(`carb="${carb}" is not one of [${CARBS.join(",")}]`);
     }
 
     if (rowErrors.length > 0) {
@@ -173,10 +149,18 @@ export async function loadMenusFromPublicCSV(): Promise<Menu[]> {
   }
 
   if (errors.length > 0) {
-    throw new Error(
-      `menus.csv validation failed:\n${errors.join("\n")}`
-    );
+    throw new Error(`menus.csv validation failed:\n${errors.join("\n")}`);
   }
 
   return menus;
+}
+
+// ─── Build-time loader (SSG only — never runs on the edge) ───
+
+export async function loadMenusFromPublicCSV(): Promise<Menu[]> {
+  const { readFileSync } = await import("fs");
+  const { join } = await import("path");
+  const csvPath = join(process.cwd(), "public", "menus.csv");
+  const raw = readFileSync(csvPath, "utf-8");
+  return parseMenusFromCSVText(raw);
 }
