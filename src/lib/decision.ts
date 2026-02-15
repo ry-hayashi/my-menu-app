@@ -37,7 +37,7 @@ export function getCandidates(menus: Menu[], filter: Filter): Menu[] {
       return menus.filter(
         (m) =>
           m.mainGenre !== "デザート" &&
-          (m.carb === target || m.carb === "どちらでもない"),
+          m.carb === target,
       );
     }
 
